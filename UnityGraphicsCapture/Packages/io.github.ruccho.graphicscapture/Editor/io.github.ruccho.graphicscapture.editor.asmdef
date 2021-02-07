@@ -1,0 +1,17 @@
+{
+    "name": "io.github.ruccho.graphicscapture.editor",
+    "references": [
+        "GUID:f7255c800679f35418bad200ed4f1667"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

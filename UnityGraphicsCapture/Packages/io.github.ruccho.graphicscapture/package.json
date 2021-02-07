@@ -1,0 +1,13 @@
+{
+    "name": "io.github.ruccho.graphicscapture",
+    "version": "0.1.0",
+    "displayName": "GraphicsCapture",
+    "description": "",
+    "unity": "2020.2",
+    "dependencies": {
+    },
+    "author": {
+        "name": "ruccho",
+        "url": "https://ruccho.github.io"
+    }
+}
