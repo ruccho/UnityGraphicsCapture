@@ -80,11 +80,8 @@ namespace Ruccho.GraphicsCapture
 
             if(prevPtr != tex)
             {
-                prevWidth = width;
-                prevHeight = height;
-                prevPtr = tex;
 
-                if (CurrentTexture == null)
+                if (CurrentTexture == null || width != prevWidth || height != prevHeight)
                 {
                     CurrentTexture =
                         Texture2D.CreateExternalTexture(width, height, TextureFormat.BGRA32, false, false, tex);
@@ -94,6 +91,10 @@ namespace Ruccho.GraphicsCapture
                 {
                     CurrentTexture.UpdateExternalTexture(tex);
                 }
+                
+                prevWidth = width;
+                prevHeight = height;
+                prevPtr = tex;
             }
             
             return CurrentTexture;
