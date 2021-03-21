@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using AOT;
 using UnityEngine;
 
 namespace Ruccho.GraphicsCapture
@@ -33,29 +34,74 @@ namespace Ruccho.GraphicsCapture
 
         public static IEnumerable<WindowInfo> GetTopWindows(bool includeNonCapturableWindows = false)
         {
-            var windows = new List<WindowInfo>();
-            EnumWindows((hwnd, lparam) =>
+            //var windows = new List<WindowInfo>();
+            var allWindows = EnumWindows().Select(hWnd => new WindowInfo(hWnd));
+
+            if (includeNonCapturableWindows) return allWindows;
+            return allWindows.Where(w => w.IsCapturable());
+        }
+        
+        private static bool isEnumeratingWindows = false;
+        private static readonly List<IntPtr> enumeratedWindows = new List<IntPtr>();
+
+        private static IEnumerable<IntPtr> EnumWindows()
+        {
+            if(isEnumeratingWindows) throw new InvalidOperationException("Only one EnumWindows() can be called at the same time.");
+            isEnumeratingWindows = true;
+            
+            enumeratedWindows.Clear();
+            
+            try
             {
-                var wi = new WindowInfo(hwnd);
-                if (includeNonCapturableWindows || wi.IsCapturable())
-                    windows.Add(wi);
-                return true;
-            }, IntPtr.Zero);
-            return windows;
+                EnumWindows(EnumWindowsCallback, IntPtr.Zero);
+            }
+            finally
+            {
+                isEnumeratingWindows = false;
+            }
+
+            return enumeratedWindows.ToArray();
+        }
+        
+        [MonoPInvokeCallback(typeof(EnumWindowsDelegate))]
+        private static bool EnumWindowsCallback(IntPtr hwnd, IntPtr lparam)
+        {
+            enumeratedWindows.Add(hwnd);
+            return true;
         }
 
         public static IEnumerable<MonitorInfo> GetMonitors()
         {
-            var monitors = new List<MonitorInfo>();
-            EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
-                (IntPtr monitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr data) =>
-                {
-                    var mi = new MonitorInfo(monitor);
+            return EnumDisplayMonitors().Select(monitor => new MonitorInfo(monitor));
+        }
+        
+        private static bool isEnumeratingMonitors = false;
+        private static readonly List<IntPtr> enumeratedMonitors = new List<IntPtr>();
+        
+        private static IEnumerable<IntPtr> EnumDisplayMonitors()
+        {
+            if(isEnumeratingMonitors) throw new InvalidOperationException("Only one EnumDisplayMonitors() can be called at the same time.");
+            isEnumeratingMonitors = true;
+            
+            enumeratedMonitors.Clear();
+            
+            try
+            {
+                EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, EnumDisplayMonitorsCallback, IntPtr.Zero);
+            }
+            finally
+            {
+                isEnumeratingMonitors = false;
+            }
 
-                    monitors.Add(mi);
-                    return true;
-                }, IntPtr.Zero);
-            return monitors;
+            return enumeratedMonitors.ToArray();
+        }
+        
+        [MonoPInvokeCallback(typeof(EnumMonitorsDelegate))]
+        private static bool EnumDisplayMonitorsCallback(IntPtr monitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr data)
+        {
+            enumeratedMonitors.Add(monitor);
+            return true;
         }
     }
 }
